@@ -20,10 +20,9 @@
 		android:layout_gravity="center_horizontal"
 		android:layoutDirection="inherit"
 		android:layout_marginTop="15dp"/>
-
-	<EditText
-		android:layout_marginTop="100dp"
-		android:layout_width="match_parent"
-		android:layout_height="25dp"
-		android:id="@+id/magnetText" />
+    <EditText
+        android:layout_marginTop="100dp"
+        android:layout_width="match_parent"
+        android:layout_height="63.0dp"
+        android:id="@+id/magnetText" />
 </RelativeLayout>
