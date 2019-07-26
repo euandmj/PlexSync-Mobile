@@ -40,12 +40,6 @@ namespace PlexSync
 
             var clipbrdSender = FindViewById<EditText>(Resource.Id.magnetText);
             clipbrdSender.Click += this.DumpClipboardString;
-
-            //var btn = FindViewById<Button>(Resource.Id.button1);
-            //btn.Click += delegate
-            //{
-            //    clipbrdSender.Text = 
-            //};
         }
 
         private async void DumpClipboardString(object sender, EventArgs e)
@@ -157,9 +151,12 @@ namespace PlexSync
 
             if (id == Resource.Id.nav_folder)
             {
-                Intent next = new Intent(this, typeof(ViewFolder));
-                StartActivity(next);
+                StartActivity(new Intent(this, typeof(ViewFolder)));
             
+            }
+            else if (id == Resource.Id.nav_downloads)
+            {
+                StartActivity(new Intent(this, typeof(ViewDownloads)));
             }
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);

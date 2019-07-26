@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Net.Sockets;
+using System.Text;
 
 using Android.App;
 using Android.Content;
@@ -18,22 +18,18 @@ using Android.Widget;
 namespace PlexSync
 {
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
-    public class ViewFolder : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
+    public class ViewDownloads : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
     {
-        private const string folderRequest = "__listdownloaded__";
-
+        private const string downloadsRequest = "__listtorrents__";
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
 
-            SetContentView(Resource.Layout.activity_folder);
+            SetContentView(Resource.Layout.activity_downloads);
 
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
-
-            FloatingActionButton fab = FindViewById<FloatingActionButton>(Resource.Id.fab);
-            fab.Click += this.Fab_Click;
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, Resource.String.navigation_drawer_open, Resource.String.navigation_drawer_close);
@@ -43,19 +39,12 @@ namespace PlexSync
             NavigationView navigationView = FindViewById<NavigationView>(Resource.Id.nav_view);
             navigationView.SetNavigationItemSelectedListener(this);
 
-            RequestDirectories();
+            RequestTorrents();
         }
 
-        private void Fab_Click(object sender, EventArgs e)
+        private void RequestTorrents()
         {
-            RequestDirectories();
-        }
-
-        private void RequestDirectories()
-        {
-            // connect to server and request directories
-            //FindViewById<TextView>(Resource.Id.errorTextView).Text = string.Empty;
-            List<string> dirs = new List<string>();
+            List<string> torrents = new List<string>();
 
             try
             {
@@ -67,14 +56,14 @@ namespace PlexSync
 
                     var ns = client.GetStream();
 
-                    byte[] data = Encoding.ASCII.GetBytes(folderRequest);
+                    byte[] data = Encoding.ASCII.GetBytes(downloadsRequest);
                     ns.Write(data, 0, data.Length);
 
                     data = new byte[1024];
 
                     Int32 bytes = ns.Read(data, 0, data.Length);
 
-                    dirs = ParseServerResponse(data, bytes);
+                    torrents = ParseServerResponse(data, bytes);
 
                     ns.Close();
                     client.Close();
@@ -82,31 +71,29 @@ namespace PlexSync
             }
             catch(SocketException ex)
             {
-                //FindViewById<TextView>(Resource.Id.errorTextView).Text = ex.Message;
-                Snackbar.Make(FindViewById<View>(Resource.Id.fab), ex.Message, Snackbar.LengthIndefinite)
+                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), ex.Message, Snackbar.LengthIndefinite)
                     .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
                 return;
             }
-
-            // add the strings into the table layout
-            TableLayout table = FindViewById<TableLayout>(Resource.Id.tablelayout);
-            var layout = new TableRow.LayoutParams(
-                ViewGroup.LayoutParams.MatchParent,
-                ViewGroup.LayoutParams.MatchParent);
-            table.RemoveAllViews();
-
-            foreach (string s in dirs)
+            finally
             {
-                TableRow row = new TableRow(this);
+                TableLayout table = FindViewById<TableLayout>(Resource.Id.tablelayout);
+                var layout = new TableRow.LayoutParams(
+                    ViewGroup.LayoutParams.MatchParent,
+                    ViewGroup.LayoutParams.MatchParent);
 
-                TextView text = new TextView(this)
+                foreach (string s in torrents)
                 {
-                    Text = s
-                };
+                    TableRow row = new TableRow(this);
 
-                
-                row.AddView(text, 0);
-                table.AddView(row);
+                    TextView text = new TextView(this)
+                    {
+                        Text = s
+                    };
+
+                    row.AddView(text, 0);
+                    table.AddView(row);
+                }
             }
         }
 
@@ -147,9 +134,10 @@ namespace PlexSync
                 StartActivity(new Intent(this, typeof(MainActivity)));
 
             }
-            else if(id == Resource.Id.nav_downloads)
+            else if (id == Resource.Id.nav_folder)
             {
-                StartActivity(new Intent(this, typeof(ViewDownloads)));
+                StartActivity(new Intent(this, typeof(ViewFolder)));
+
             }
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);

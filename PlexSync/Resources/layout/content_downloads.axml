@@ -5,15 +5,8 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:showIn="@layout/app_bar_folder"
+    tools:showIn="@layout/app_bar_downloads"
 	android:id="@+id/tablelayout">
 
-	<TextView
-		android:id="@+id/errorTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-		android:textSize="26dp"
-        android:text="Files/Folders in Default Directory:" />
 
 </TableLayout>
