@@ -101,9 +101,9 @@ namespace PlexSync
             {
                 using (TcpClient client = new TcpClient())
                 {
+                    client.SendTimeout = 1000;
+                    client.ReceiveTimeout = 1000;
                     client.Connect("192.168.0.2", 54000);
-                    client.SendTimeout = 1500;
-                    client.ReceiveTimeout = 1500;
 
                     var ns = client.GetStream();
 

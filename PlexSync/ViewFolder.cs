@@ -17,23 +17,20 @@ using Android.Widget;
 
 namespace PlexSync
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
+    [Activity(Label = "View Folder", Theme = "@style/AppTheme.NoActionBar")]
     public class ViewFolder : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
     {
         private const string folderRequest = "__listdownloaded__";
 
-
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-
             SetContentView(Resource.Layout.activity_folder);
 
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
 
-            FloatingActionButton fab = FindViewById<FloatingActionButton>(Resource.Id.fab);
-            fab.Click += this.Fab_Click;
+            
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, Resource.String.navigation_drawer_open, Resource.String.navigation_drawer_close);
@@ -43,11 +40,6 @@ namespace PlexSync
             NavigationView navigationView = FindViewById<NavigationView>(Resource.Id.nav_view);
             navigationView.SetNavigationItemSelectedListener(this);
 
-            RequestDirectories();
-        }
-
-        private void Fab_Click(object sender, EventArgs e)
-        {
             RequestDirectories();
         }
 
@@ -61,9 +53,9 @@ namespace PlexSync
             {
                 using (var client = new TcpClient())
                 {
+                    client.SendTimeout = 1000;
+                    client.ReceiveTimeout = 1000;
                     client.Connect("192.168.0.2", 54000);
-                    client.SendTimeout = 1500;
-                    client.ReceiveTimeout = 1500;
 
                     var ns = client.GetStream();
 
@@ -80,11 +72,16 @@ namespace PlexSync
                     client.Close();
                 }
             }
-            catch(SocketException ex)
+            catch (SocketException)
             {
-                //FindViewById<TextView>(Resource.Id.errorTextView).Text = ex.Message;
-                Snackbar.Make(FindViewById<View>(Resource.Id.fab), ex.Message, Snackbar.LengthIndefinite)
+                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), "No response from host", Snackbar.LengthIndefinite)
                     .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
+                return;
+            }
+            catch (TimeoutException ex)
+            {
+                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), ex.Message, Snackbar.LengthIndefinite)
+                       .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
                 return;
             }
 

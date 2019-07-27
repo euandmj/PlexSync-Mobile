@@ -8,5 +8,22 @@
     tools:showIn="@layout/app_bar_downloads"
 	android:id="@+id/tablelayout">
 
-
+	<TableRow>
+        <TextView
+            android:layout_column="1"
+            android:text="Name"
+            android:padding="10dip"/>
+		<TextView
+            android:layout_column="2"
+			android:text="Progress"
+			android:gravity="right"
+			android:padding="3dip"
+			android:layout_marginLeft="170dp" />
+		<TextView
+            android:layout_column="3"
+            android:text="State"
+            android:gravity="right"
+            android:padding="40dip"/>
+    </TableRow>
+	
 </TableLayout>

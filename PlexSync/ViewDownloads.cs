@@ -17,13 +17,14 @@ using Android.Widget;
 
 namespace PlexSync
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
+    [Activity(Label = "View Downloads", Theme = "@style/AppTheme.NoActionBar")]
     public class ViewDownloads : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
     {
         private const string downloadsRequest = "__listtorrents__";
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
+            
             base.OnCreate(savedInstanceState);
 
             SetContentView(Resource.Layout.activity_downloads);
@@ -50,9 +51,11 @@ namespace PlexSync
             {
                 using (var client = new TcpClient())
                 {
+                    client.SendTimeout = 1000;
+                    client.ReceiveTimeout = 1000;
+
+
                     client.Connect("192.168.0.2", 54000);
-                    client.SendTimeout = 1500;
-                    client.ReceiveTimeout = 1500;
 
                     var ns = client.GetStream();
 
@@ -69,10 +72,16 @@ namespace PlexSync
                     client.Close();
                 }
             }
-            catch(SocketException ex)
+            catch(SocketException)
+            {
+                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), "No response from host", Snackbar.LengthIndefinite)
+                    .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
+                return;
+            }
+            catch(TimeoutException ex)
             {
                 Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), ex.Message, Snackbar.LengthIndefinite)
-                    .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
+                       .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
                 return;
             }
             finally
@@ -81,18 +90,44 @@ namespace PlexSync
                 var layout = new TableRow.LayoutParams(
                     ViewGroup.LayoutParams.MatchParent,
                     ViewGroup.LayoutParams.MatchParent);
-
+                
                 foreach (string s in torrents)
                 {
+                    // fucks up everything?
+                    string[] split = s.Split(' ');
+
                     TableRow row = new TableRow(this);
+                    row.LayoutParameters = layout;
 
                     TextView text = new TextView(this)
                     {
-                        Text = s
-                    };
+                        Text = split[0]
 
+                    };
+                    text.LayoutParameters = layout;
+                    text.SetMaxWidth(165);
                     row.AddView(text, 0);
-                    table.AddView(row);
+                    
+                    
+
+                    text = new TextView(this)
+                    {
+                        Text = split[1]
+
+                    };
+                    text.LayoutParameters = layout;
+                    row.AddView(text, 1);
+
+                    text = new TextView(this)
+                    {
+                        Text = split[2]
+
+                    };
+                    text.LayoutParameters = layout;
+                    row.AddView(text, 2);
+
+
+                    table.AddView(row, layout);
                 }
             }
         }
