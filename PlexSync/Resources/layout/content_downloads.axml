@@ -1,42 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-	android:paddingTop="5dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:showIn="@layout/app_bar_downloads">
+    tools:showIn="@layout/app_bar_downloads"
+	android:id="@+id/tablelayout">
+
+	<TableRow>
+        <TextView
+            android:layout_column="1"
+            android:text="Name"
+            android:padding="10dip"/>
+		<TextView
+            android:layout_column="2"
+			android:text="Progress"
+			android:gravity="right"
+			android:padding="3dip"
+			android:layout_marginLeft="170dp" />
+		<TextView
+            android:layout_column="3"
+            android:text="State"
+            android:gravity="right"
+            android:padding="40dip"/>
+    </TableRow>
 	
-
-
-	<TableLayout
-		android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:stretchColumns="3"
-		android:id="@+id/tablelayout">
-
-		<TableRow
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content" 
-			android:orientation="horizontal"
-			android:layout_weight="1">
-			<TextView
-				android:layout_column="1"
-				android:text="Name"
-				android:padding="10dip"/>
-			<TextView
-				android:layout_column="2"
-				android:text="Progress"
-				android:gravity="right"
-				android:padding="3dip"
-				android:layout_marginLeft="170dp" />
-			<TextView
-				android:layout_column="3"
-				android:text="State"
-				android:gravity="right"
-				android:padding="40dip"/>
-		</TableRow>
-	</TableLayout>
-	
-</RelativeLayout>
+</TableLayout>

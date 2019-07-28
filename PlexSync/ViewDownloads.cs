@@ -100,7 +100,7 @@ namespace PlexSync
                 var layout = new TableRow.LayoutParams(
                     ViewGroup.LayoutParams.MatchParent,
                     ViewGroup.LayoutParams.MatchParent);
-                
+
                 foreach (string s in torrents)
                 {
                     // fucks up everything?
@@ -111,21 +111,21 @@ namespace PlexSync
 
                     TextView text = new TextView(this)
                     {
-                        Text = split[0].Substring(0, 25)
+                        Text = split[0]
 
                     };
-                    //text.LayoutParameters = layout;
-                    //text.SetMaxWidth(165);
+                    text.LayoutParameters = layout;
+                    text.SetMaxWidth(165);
                     row.AddView(text, 0);
-                    
-                    
+
+
 
                     text = new TextView(this)
                     {
                         Text = split[1]
 
                     };
-                    //text.LayoutParameters = layout;
+                    text.LayoutParameters = layout;
                     row.AddView(text, 1);
 
                     text = new TextView(this)
@@ -133,7 +133,7 @@ namespace PlexSync
                         Text = split[2]
 
                     };
-                    //text.LayoutParameters = layout;
+                    text.LayoutParameters = layout;
                     row.AddView(text, 2);
 
 
