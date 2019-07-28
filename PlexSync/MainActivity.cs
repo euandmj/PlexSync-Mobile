@@ -52,9 +52,9 @@ namespace PlexSync
 
             magnettxt.Text = clipboardText;
 
-#if DEBUG
-            magnettxt.Text = "magnet:?xt=urn:btih:4bf843445b1a19a42dd884f20a5931e42d107b35&dn=South.Park.S22E01.Dead.Kids.720p.WEBRip.AAC2.0.H.264.mkv&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80&tr=udp%3A%2F%2Fopen.demonii.com%3A1337&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Fexodus.desync.com%3A6969";
-#endif
+//#if DEBUG
+//            magnettxt.Text = "magnet:?xt=urn:btih:4bf843445b1a19a42dd884f20a5931e42d107b35&dn=South.Park.S22E01.Dead.Kids.720p.WEBRip.AAC2.0.H.264.mkv&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80&tr=udp%3A%2F%2Fopen.demonii.com%3A1337&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Fexodus.desync.com%3A6969";
+//#endif
         }
 
         public override void OnBackPressed()
@@ -96,6 +96,7 @@ namespace PlexSync
 
             if (uri == "") return;
             string response = string.Empty;
+            const int port = 54000;
 
             try
             {
@@ -103,11 +104,11 @@ namespace PlexSync
                 {
                     client.SendTimeout = 1000;
                     client.ReceiveTimeout = 1000;
-                    client.Connect("192.168.0.2", 54000);
+                    client.Connect("192.168.0.2", port);
 
                     var ns = client.GetStream();
 
-                    byte[] data = System.Text.Encoding.ASCII.GetBytes(uri);
+                    byte[] data = System.Text.Encoding.UTF8.GetBytes(uri);
 
                     ns.Write(data, 0, data.Length);
 
@@ -115,11 +116,16 @@ namespace PlexSync
 
                     // Read the first batch of the TcpServer response bytes.
                     Int32 bytes = ns.Read(data, 0, data.Length);
-                    response = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
+                    response = System.Text.Encoding.UTF8.GetString(data, 0, bytes);
 
                     ns.Close();
                     client.Close();
                 }
+            }
+            catch (System.IO.IOException)
+            {
+                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), $"Port {port} is busy", Snackbar.LengthIndefinite)
+                       .SetAction("Action", (View.IOnClickListener)null).Show();
             }
             catch (TimeoutException)
             {

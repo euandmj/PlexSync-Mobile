@@ -50,7 +50,7 @@ namespace PlexSync
         private void RequestTorrents()
         {
             List<string> torrents = new List<string>();
-
+            const int port = 54000;
             try
             {
                 using (var client = new TcpClient())
@@ -59,11 +59,11 @@ namespace PlexSync
                     client.ReceiveTimeout = 1000;
 
 
-                    client.Connect("192.168.0.2", 54000);
+                    client.Connect("192.168.0.2", port);
 
                     var ns = client.GetStream();
 
-                    byte[] data = Encoding.ASCII.GetBytes(downloadsRequest);
+                    byte[] data = Encoding.UTF8.GetBytes(downloadsRequest);
                     ns.Write(data, 0, data.Length);
 
                     data = new byte[1024];
@@ -76,16 +76,22 @@ namespace PlexSync
                     client.Close();
                 }
             }
+            catch (System.IO.IOException)
+            {
+                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), $"Port {port} is busy", Snackbar.LengthIndefinite)
+                       .SetAction("Action", (View.IOnClickListener)null).Show();
+                return;
+            }
             catch(SocketException)
             {
                 Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), "No response from host", Snackbar.LengthIndefinite)
-                    .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
+                    .SetAction("Action", (View.IOnClickListener)null).Show();
                 return;
             }
             catch(TimeoutException ex)
             {
                 Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), ex.Message, Snackbar.LengthIndefinite)
-                       .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
+                       .SetAction("Action", (View.IOnClickListener)null).Show();
                 return;
             }
             finally
@@ -98,7 +104,7 @@ namespace PlexSync
                 foreach (string s in torrents)
                 {
                     // fucks up everything?
-                    string[] split = s.Split(' ');
+                    string[] split = s.Split('~');
 
                     TableRow row = new TableRow(this);
                     row.LayoutParameters = layout;
@@ -138,12 +144,12 @@ namespace PlexSync
 
         private List<string> ParseServerResponse(byte[] data, Int32 bytes)
         {
-            string rawresp = Encoding.ASCII.GetString(data, 0, bytes);
+            string rawresp = Encoding.UTF8.GetString(data, 0, bytes);
             if (rawresp == "")
                 return new List<string>() { "" };
 
             // split on the seperator ','
-            List<string> dirs = rawresp.Split(',').ToList();
+            List<string> dirs = rawresp.Split('\n').ToList();
 
             // remove any whitespace
             dirs.ForEach(s => s.Trim());

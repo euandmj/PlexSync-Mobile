@@ -30,7 +30,7 @@ namespace PlexSync
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
 
-            
+
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, Resource.String.navigation_drawer_open, Resource.String.navigation_drawer_close);
@@ -48,6 +48,7 @@ namespace PlexSync
             // connect to server and request directories
             //FindViewById<TextView>(Resource.Id.errorTextView).Text = string.Empty;
             List<string> dirs = new List<string>();
+            const int port = 54000;
 
             try
             {
@@ -55,11 +56,11 @@ namespace PlexSync
                 {
                     client.SendTimeout = 1000;
                     client.ReceiveTimeout = 1000;
-                    client.Connect("192.168.0.2", 54000);
+                    client.Connect("192.168.0.2", port);
 
                     var ns = client.GetStream();
 
-                    byte[] data = Encoding.ASCII.GetBytes(folderRequest);
+                    byte[] data = Encoding.UTF8.GetBytes(folderRequest);
                     ns.Write(data, 0, data.Length);
 
                     data = new byte[1024];
@@ -71,6 +72,12 @@ namespace PlexSync
                     ns.Close();
                     client.Close();
                 }
+            }
+            catch (System.IO.IOException)
+            {
+                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), $"Port {port} is busy", Snackbar.LengthIndefinite)
+                       .SetAction("Action", (View.IOnClickListener)null).Show();
+                return;
             }
             catch (SocketException)
             {
@@ -101,7 +108,7 @@ namespace PlexSync
                     Text = s
                 };
 
-                
+
                 row.AddView(text, 0);
                 table.AddView(row);
             }
@@ -109,7 +116,7 @@ namespace PlexSync
 
         private List<string> ParseServerResponse(byte[] data, Int32 bytes)
         {
-            string rawresp = Encoding.ASCII.GetString(data, 0, bytes);
+            string rawresp = Encoding.UTF8.GetString(data, 0, bytes);
             if (rawresp == "")
                 return new List<string>() { "" };
 
@@ -144,7 +151,7 @@ namespace PlexSync
                 StartActivity(new Intent(this, typeof(MainActivity)));
 
             }
-            else if(id == Resource.Id.nav_downloads)
+            else if (id == Resource.Id.nav_downloads)
             {
                 StartActivity(new Intent(this, typeof(ViewDownloads)));
             }
@@ -152,6 +159,7 @@ namespace PlexSync
             {
                 StartActivity(new Intent(this, typeof(Tools)));
             }
+
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             drawer.CloseDrawer(GravityCompat.Start);
