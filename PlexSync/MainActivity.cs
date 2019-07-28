@@ -158,6 +158,10 @@ namespace PlexSync
             {
                 StartActivity(new Intent(this, typeof(ViewDownloads)));
             }
+            else if (id == Resource.Id.nav_manage)
+            {
+                StartActivity(new Intent(this, typeof(Tools)));
+            }
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             drawer.CloseDrawer(GravityCompat.Start);

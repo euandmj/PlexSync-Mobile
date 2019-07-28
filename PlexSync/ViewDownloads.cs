@@ -40,6 +40,10 @@ namespace PlexSync
             NavigationView navigationView = FindViewById<NavigationView>(Resource.Id.nav_view);
             navigationView.SetNavigationItemSelectedListener(this);
 
+             
+
+
+
             RequestTorrents();
         }
 
@@ -173,6 +177,10 @@ namespace PlexSync
             {
                 StartActivity(new Intent(this, typeof(ViewFolder)));
 
+            }
+            else if(id == Resource.Id.nav_manage)
+            {
+                StartActivity(new Intent(this, typeof(Tools)));
             }
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);

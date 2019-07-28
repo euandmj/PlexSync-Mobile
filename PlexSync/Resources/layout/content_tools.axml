@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:showIn="@layout/app_bar_tools"
+	android:id="@+id/tablelayout">
+
+	<TextView
+		android:text="Connection Info"
+		android:textAppearance="?android:attr/textAppearanceMedium"
+		android:gravity="center"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/textView1"
+		android:layout_gravity="center_horizontal"
+		android:layoutDirection="inherit"
+		android:textSize="25dp"
+		android:layout_marginTop="15dp"/>
+
+
+	<TextView
+		android:text="Device IP"
+		android:textStyle="bold"
+		android:gravity="center"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/text_deviceip"
+		android:layout_gravity="center_horizontal"
+		android:layoutDirection="inherit"
+		android:textSize="15dp"	
+		android:layout_marginTop="55dp"/>
+
+	<TextView
+		android:text="0.0.0.0:0"
+		android:gravity="center"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/fofo"
+		android:layout_gravity="center_horizontal"
+		android:layoutDirection="inherit"
+		android:textSize="20dp"	
+		android:layout_marginTop="3dp"/>
+
+
+	<TextView
+		android:text="Status"
+		android:textStyle="bold"
+		android:gravity="center"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/text_status"
+		android:layout_gravity="center_horizontal"
+		android:layoutDirection="inherit"
+		android:textSize="15dp"	
+		android:layout_marginTop="15dp"/>
+
+	<TextView
+		android:text="False"
+		android:gravity="center"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/text_status1"
+		android:layout_gravity="center_horizontal"
+		android:layoutDirection="inherit"
+		android:textSize="20dp"	
+		android:layout_marginTop="3dp"/>
+
+	<TextView
+		android:text="Server"
+		android:textStyle="bold"
+		android:gravity="center"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/text_server"
+		android:layout_gravity="center_horizontal"
+		android:layoutDirection="inherit"
+		android:textSize="15dp"			
+		android:layout_marginTop="15dp"/>
+
+	<TextView
+		android:text="0.0.0.0:0"
+		android:gravity="center"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/text_server1"
+		android:layout_gravity="center_horizontal"
+		android:layoutDirection="inherit"
+		android:textSize="20dp"	
+		android:layout_marginTop="3dp"/>
+	
+	<TextView
+		android:text="Ping"
+		android:textStyle="bold"
+		android:gravity="center"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/text_ping"
+		android:layout_gravity="center_horizontal"
+		android:layoutDirection="inherit"
+		android:textSize="15dp"	
+		android:layout_marginTop="15dp"/>
+
+	<TextView		
+		android:text="1ms"
+		android:gravity="center"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/text_text_ping1"
+		android:layout_gravity="center_horizontal"
+		android:layoutDirection="inherit"
+		android:textSize="20dp"	
+		android:layout_marginTop="3dp"/>
+
+	<TextView
+		android:text="Transferred"
+		android:textStyle="bold"
+		android:gravity="center"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/text_trans"
+		android:layout_gravity="center_horizontal"
+		android:layoutDirection="inherit"
+		android:textSize="15dp"	
+		android:layout_marginTop="15dp"/>
+
+	<TextView
+		android:text="0 KB"
+		android:gravity="center"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/text_trans1"
+		android:layout_gravity="center_horizontal"
+		android:layoutDirection="inherit"
+		android:textSize="20dp"	
+		android:layout_marginTop="3dp"/>
+
+	<TextView
+		android:text="Uptime"
+		android:textStyle="bold"
+		android:gravity="center"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/text_uptime"
+		android:layout_gravity="center_horizontal"
+		android:layoutDirection="inherit"
+		android:textSize="15dp"	
+		android:layout_marginTop="15dp"/>
+
+	<TextView
+		android:text="0 s"
+		android:gravity="center"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/text_uptime1"
+		android:layout_gravity="center_horizontal"
+		android:layoutDirection="inherit"
+		android:textSize="20dp"	
+		android:layout_marginTop="3dp"/>
+</TableLayout>
