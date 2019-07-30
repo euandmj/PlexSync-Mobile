@@ -38,8 +38,28 @@ namespace PlexSync
             NavigationView navigationView = FindViewById<NavigationView>(Resource.Id.nav_view);
             navigationView.SetNavigationItemSelectedListener(this);
 
+            var spinner = FindViewById<Spinner>(Resource.Id.spinner);
+            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(spinner_ItemSelected);
+            var adapter = ArrayAdapter.CreateFromResource(
+                    this, Resource.Array.directories, Android.Resource.Layout.SimpleSpinnerItem);
+            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+            spinner.Adapter = adapter;
+
+
             var clipbrdSender = FindViewById<EditText>(Resource.Id.magnetText);
             clipbrdSender.Click += this.DumpClipboardString;
+        }
+
+        private void spinner_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            // do something interesting with this function?
+            // change background or smth
+
+            //var spinner = (Spinner)sender;
+
+            //string selected = spinner.SelectedItem.ToString();
+
+            //Toast.MakeText(this, selected, ToastLength.Long).Show();
         }
 
         private async void DumpClipboardString(object sender, EventArgs e)
@@ -92,9 +112,12 @@ namespace PlexSync
             // set up the http send and replace the string below with the response
 
 
-            string uri = FindViewById<EditText>(Resource.Id.magnetText).Text;
+            string text = FindViewById<EditText>(Resource.Id.magnetText).Text;
 
-            if (uri == "") return;
+            if (text == "") return;
+
+            //string uri = AppendDir(text);
+            string uri = text;
             string response = string.Empty;
             const int port = 54000;
 
@@ -146,8 +169,27 @@ namespace PlexSync
 
 
             View view = (View) sender;
-            Snackbar.Make(view, response, Snackbar.LengthIndefinite)
+            Snackbar.Make(view, response, Snackbar.LengthLong)
                 .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
+        }
+
+        private string AppendDir(string uri)
+        {
+            string selected = ((Spinner)FindViewById(Resource.Id.spinner)).SelectedItem.ToString();
+
+            switch (selected)
+            {
+                case "Movies":
+                    return "MV" + uri;
+                case "TV":
+                    return "TV" + uri;
+                case "Documentaries":
+                    return "DM" + uri;
+                case "Anime":
+                    return "AN" + uri;
+                default:
+                    return "AT" + uri;
+            }
         }
 
         public bool OnNavigationItemSelected(IMenuItem item)

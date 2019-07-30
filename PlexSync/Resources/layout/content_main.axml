@@ -9,7 +9,6 @@
 	tools:showIn="@layout/app_bar_main"
 	android:minWidth="25px"
 	android:minHeight="25px">
-
 	<TextView
 		android:text="paste a magnet uri below"
 		android:textAppearance="?android:attr/textAppearanceMedium"
@@ -20,9 +19,17 @@
 		android:layout_gravity="center_horizontal"
 		android:layoutDirection="inherit"
 		android:layout_marginTop="15dp"/>
-    <EditText
-        android:layout_marginTop="100dp"
-        android:layout_width="match_parent"
-        android:layout_height="63.0dp"
-        android:id="@+id/magnetText" />
+	<EditText
+		android:layout_marginTop="100dp"
+		android:layout_width="match_parent"
+		android:layout_height="63.0dp"
+		android:id="@+id/magnetText" />
+	<Spinner		
+		android:layout_marginTop="25dp"
+		android:textAlignment="center"
+		android:layout_centerHorizontal="true"
+		android:layout_width="150dp"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/magnetText"
+		android:id="@+id/spinner" />
 </RelativeLayout>

@@ -90,19 +90,19 @@ namespace PlexSync
             }
             catch (System.IO.IOException ex)
             {
-                Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), ex.Message, Snackbar.LengthIndefinite)
+                Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), ex.Message, Snackbar.LengthLong)
                        .SetAction("Action", (View.IOnClickListener)null).Show();
                 return;
             }
             catch (SocketException ex)
             {
-                Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), ex.Message, Snackbar.LengthIndefinite)
+                Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), ex.Message, Snackbar.LengthLong)
                        .SetAction("Action", (View.IOnClickListener)null).Show();
                 return;
             }
             catch (TimeoutException ex)
             {
-                Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), ex.Message, Snackbar.LengthIndefinite)
+                Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), ex.Message, Snackbar.LengthLong)
                        .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
                 return;
             }
