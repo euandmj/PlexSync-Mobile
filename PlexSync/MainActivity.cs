@@ -122,22 +122,21 @@ namespace PlexSync
                     client.Close();
                 }
             }
-            catch (System.IO.IOException)
+            catch (System.IO.IOException ex)
             {
-                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), $"Port {port} is busy", Snackbar.LengthIndefinite)
-                       .SetAction("Action", (View.IOnClickListener)null).Show();
+                response = ex.Message;
             }
-            catch (TimeoutException)
+            catch (TimeoutException ex)
             {
-                response = "Request Timeout";
+                response = ex.Message;
             }
             catch (ArgumentNullException ex)
             {
-                response = "ArgNull Except: " + ex.Message;
+                response = ex.Message;
             }
             catch (SocketException ex)
             {
-                response = "Socket Except: " + ex.Message;
+                response = ex.Message;
             }
             catch (Exception ex)
             {

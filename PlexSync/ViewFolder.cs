@@ -43,7 +43,7 @@ namespace PlexSync
             RequestDirectories();
         }
 
-        private void RequestDirectories()
+        async private void RequestDirectories()
         {
             // connect to server and request directories
             //FindViewById<TextView>(Resource.Id.errorTextView).Text = string.Empty;
@@ -65,7 +65,7 @@ namespace PlexSync
 
                     data = new byte[1024];
 
-                    Int32 bytes = ns.Read(data, 0, data.Length);
+                    int bytes = await ns.ReadAsync(data, 0, data.Length);
 
                     dirs = ParseServerResponse(data, bytes);
 
@@ -73,16 +73,16 @@ namespace PlexSync
                     client.Close();
                 }
             }
-            catch (System.IO.IOException)
+            catch (System.IO.IOException ex)
             {
-                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), $"Port {port} is busy", Snackbar.LengthIndefinite)
+                Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), ex.Message, Snackbar.LengthIndefinite)
                        .SetAction("Action", (View.IOnClickListener)null).Show();
                 return;
             }
-            catch (SocketException)
+            catch (SocketException ex)
             {
-                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), "No response from host", Snackbar.LengthIndefinite)
-                    .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
+                Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), ex.Message, Snackbar.LengthIndefinite)
+                       .SetAction("Action", (View.IOnClickListener)null).Show();
                 return;
             }
             catch (TimeoutException ex)
@@ -118,7 +118,7 @@ namespace PlexSync
         {
             string rawresp = Encoding.UTF8.GetString(data, 0, bytes);
             if (rawresp == "")
-                return new List<string>() { "" };
+                return new List<string>();
 
             // split on the seperator ','
             List<string> dirs = rawresp.Split(',').ToList();

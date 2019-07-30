@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-
+using System.Threading;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -17,9 +17,29 @@ using Android.Widget;
 
 namespace PlexSync
 {
+    internal struct Torrent
+    {
+        public string Name;
+        public string Progress;
+        public string State;
+
+        public void SetProgress(string val)
+        {
+            if (double.TryParse(val, out double x))
+            {
+                Progress = Math.Round(x * 100, 3).ToString() + "%";
+            }
+            else
+                Progress = val;
+        }
+    }
+
     [Activity(Label = "View Downloads", Theme = "@style/AppTheme.NoActionBar")]
     public class ViewDownloads : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
     {
+        private Dictionary<string, Torrent> activeDownloads; 
+        private SwipeRefreshLayout swipeRefreshLayout;
+
         private const string downloadsRequest = "__listtorrents__";
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -28,6 +48,8 @@ namespace PlexSync
             base.OnCreate(savedInstanceState);
 
             SetContentView(Resource.Layout.activity_downloads);
+
+            activeDownloads = new Dictionary<string, Torrent>();
 
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
@@ -40,14 +62,25 @@ namespace PlexSync
             NavigationView navigationView = FindViewById<NavigationView>(Resource.Id.nav_view);
             navigationView.SetNavigationItemSelectedListener(this);
 
-             
-
-
+            swipeRefreshLayout = FindViewById<SwipeRefreshLayout>(Resource.Id.rootLayout);
+            swipeRefreshLayout.SetColorSchemeColors(new int[] { Android.Resource.Color.BackgroundLight });
+            swipeRefreshLayout.Refresh += this.SwipeRefreshLayout_Refresh;
+            
 
             RequestTorrents();
         }
 
-        private void RequestTorrents()
+        private void SwipeRefreshLayout_Refresh(object sender, EventArgs e)
+        {
+            
+            Thread t = new Thread(RequestTorrents);
+            t.Start();
+
+
+            swipeRefreshLayout.Refreshing = false;
+        }
+
+        async private void RequestTorrents()
         {
             List<string> torrents = new List<string>();
             const int port = 54000;
@@ -68,7 +101,9 @@ namespace PlexSync
 
                     data = new byte[1024];
 
-                    Int32 bytes = ns.Read(data, 0, data.Length);
+                    
+                    int bytes = await ns.ReadAsync(data, 0, data.Length);
+                    //int bytes = ns.Read(data, 0, data.Length);
 
                     torrents = ParseServerResponse(data, bytes);
 
@@ -76,69 +111,103 @@ namespace PlexSync
                     client.Close();
                 }
             }
-            catch (System.IO.IOException)
+            catch (System.IO.IOException ex)
             {
-                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), $"Port {port} is busy", Snackbar.LengthIndefinite)
+                Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), ex.Message, Snackbar.LengthIndefinite)
                        .SetAction("Action", (View.IOnClickListener)null).Show();
                 return;
             }
-            catch(SocketException)
+            catch(SocketException ex)
             {
-                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), "No response from host", Snackbar.LengthIndefinite)
-                    .SetAction("Action", (View.IOnClickListener)null).Show();
+                Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), ex.Message, Snackbar.LengthIndefinite)
+                       .SetAction("Action", (View.IOnClickListener)null).Show();
                 return;
             }
             catch(TimeoutException ex)
             {
-                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), ex.Message, Snackbar.LengthIndefinite)
+                Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), ex.Message, Snackbar.LengthIndefinite)
                        .SetAction("Action", (View.IOnClickListener)null).Show();
                 return;
             }
             finally
             {
-                TableLayout table = FindViewById<TableLayout>(Resource.Id.tablelayout);
-                var layout = new TableRow.LayoutParams(
-                    ViewGroup.LayoutParams.MatchParent,
-                    ViewGroup.LayoutParams.MatchParent);
-
-                foreach (string s in torrents)
+                // build the dictionary
+                try
                 {
-                    // fucks up everything?
-                    string[] split = s.Split('~');
-
-                    TableRow row = new TableRow(this);
-                    row.LayoutParameters = layout;
-
-                    TextView text = new TextView(this)
+                    foreach (string s in torrents)
                     {
-                        Text = split[0]
+                        string[] split = s.Split('~');
+                        // 0 - hash (key)
+                        // 1 - name
+                        // 2 - progress
+                        // 3 - state
 
-                    };
-                    text.LayoutParameters = layout;
-                    text.SetMaxWidth(165);
-                    row.AddView(text, 0);
+                        var t = new Torrent()
+                        {
+                            Name = split[1],
+                            State = split[3]
+                        };
+                        t.SetProgress(split[2]);
 
-
-
-                    text = new TextView(this)
-                    {
-                        Text = split[1]
-
-                    };
-                    text.LayoutParameters = layout;
-                    row.AddView(text, 1);
-
-                    text = new TextView(this)
-                    {
-                        Text = split[2]
-
-                    };
-                    text.LayoutParameters = layout;
-                    row.AddView(text, 2);
-
-
-                    table.AddView(row, layout);
+                        activeDownloads[split[0]] = t;
+                        
+                        RunOnUiThread(UpdateListView);
+                    }
                 }
+                catch (IndexOutOfRangeException)
+                {
+                    throw;
+                }
+            }
+        }
+
+        private void UpdateListView()
+        {
+            var table = FindViewById<TableLayout>(Resource.Id.tableLayout1);
+            var layout = new TableRow.LayoutParams(
+                   ViewGroup.LayoutParams.WrapContent,
+                   ViewGroup.LayoutParams.WrapContent);
+
+            // clear the table apart from header
+            for(int i = 1; i < table.ChildCount; i++)
+            {
+                table.RemoveViewAt(i);
+            }
+
+            int rowcolorcount = 0;
+            foreach(var pair in activeDownloads)
+            {
+                TableRow row = new TableRow(this);
+
+                TextView text = new TextView(this)
+                {
+                    Text = pair.Value.Name
+
+                };
+                text.SetMaxWidth(160);
+                text.SetMinWidth(160);
+                text.LayoutParameters = layout;
+                row.AddView(text, 0);
+
+                text = new TextView(this)
+                {                                       
+                    Text = pair.Value.Progress
+                };
+                text.LayoutParameters = layout;
+                row.AddView(text, 1);
+
+                text = new TextView(this)
+                {
+                    Text = pair.Value.State
+
+                };
+                text.LayoutParameters = layout;
+                row.AddView(text, 2);
+
+                // change colour 
+                if (rowcolorcount++ % 2 == 0)
+                    row.SetBackgroundColor(Android.Graphics.Color.LightBlue);
+                table.AddView(row, layout);
             }
         }
 
@@ -146,7 +215,7 @@ namespace PlexSync
         {
             string rawresp = Encoding.UTF8.GetString(data, 0, bytes);
             if (rawresp == "")
-                return new List<string>() { "" };
+                return new List<string>();
 
             // split on the seperator ','
             List<string> dirs = rawresp.Split('\n').ToList();

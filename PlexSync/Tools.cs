@@ -120,25 +120,52 @@ namespace PlexSync
             }
         }
 
-        private void ServerTimeLoop()
+        async private void ServerTimeLoop()
         {
             DateTime start = new DateTime();
             var textview = FindViewById<TextView>(Resource.Id.text_uptime1);
+            string response = string.Empty;
+
+            try
+            {
+                var ns = client.GetStream();
+                byte[] data = Encoding.UTF8.GetBytes(timeString);
+
+                ns.Write(data, 0, data.Length);
+
+                data = new byte[1024];
+
+                int bytes = await ns.ReadAsync(data, 0, data.Length);
+
+                response = Encoding.UTF8.GetString(data, 0, bytes);
+
+            }
+            catch (System.IO.IOException ex)
+            {
+                Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), ex.Message, Snackbar.LengthIndefinite)
+                       .SetAction("Action", (View.IOnClickListener)null).Show();
+                return;
+            }
+            catch (SocketException ex)
+            {
+                Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), ex.Message, Snackbar.LengthIndefinite)
+                       .SetAction("Action", (View.IOnClickListener)null).Show();
+                return;
+            }
+            catch (TimeoutException ex)
+            {
+                Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), ex.Message, Snackbar.LengthIndefinite)
+                       .SetAction("Action", (View.IOnClickListener)null).Show();
+                return;
+            }
+            finally
+            {
+                start = DateTime.ParseExact(response, "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
 
 
-            var ns = client.GetStream();
-            byte[] data = Encoding.UTF8.GetBytes(timeString);
-
-            ns.Write(data, 0, data.Length);
-
-            data = new byte[1024];
-
-            Int32 bytes = ns.Read(data, 0, data.Length);
-
-            string response = Encoding.UTF8.GetString(data, 0, bytes);
-
-            start = DateTime.ParseExact(response, "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
-                
+            }
+           
+               
           
 
             while (client.Connected)
