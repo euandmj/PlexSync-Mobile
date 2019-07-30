@@ -131,9 +131,9 @@ namespace PlexSync
             }
             finally
             {
-                // build the dictionary
                 try
                 {
+                    // build the dictionary
                     foreach (string s in torrents)
                     {
                         string[] split = s.Split('~');

@@ -14,13 +14,16 @@ using Android.Support.V4.Widget;
 using Android.Support.V7.App;
 using Android.Views;
 using Android.Widget;
+using System.Threading;
 
 namespace PlexSync
 {
     [Activity(Label = "View Folder", Theme = "@style/AppTheme.NoActionBar")]
     public class ViewFolder : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
     {
+        private List<string> directories; 
         private const string folderRequest = "__listdownloaded__";
+        private SwipeRefreshLayout swipeRefreshLayout;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -30,7 +33,7 @@ namespace PlexSync
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
 
-
+            directories = new List<string>();
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, Resource.String.navigation_drawer_open, Resource.String.navigation_drawer_close);
@@ -40,14 +43,26 @@ namespace PlexSync
             NavigationView navigationView = FindViewById<NavigationView>(Resource.Id.nav_view);
             navigationView.SetNavigationItemSelectedListener(this);
 
+            swipeRefreshLayout = FindViewById<SwipeRefreshLayout>(Resource.Id.rootLayout);
+            swipeRefreshLayout.SetColorSchemeColors(new int[] { Android.Resource.Color.BackgroundLight });
+            swipeRefreshLayout.Refresh += this.SwipeRefreshLayout_Refresh;
+
             RequestDirectories();
+        }
+
+        private void SwipeRefreshLayout_Refresh(object sender, EventArgs e)
+        {
+            Thread t = new Thread(RequestDirectories);
+            t.Start();
+
+            swipeRefreshLayout.Refreshing = false;
         }
 
         async private void RequestDirectories()
         {
             // connect to server and request directories
             //FindViewById<TextView>(Resource.Id.errorTextView).Text = string.Empty;
-            List<string> dirs = new List<string>();
+            
             const int port = 54000;
 
             try
@@ -67,7 +82,7 @@ namespace PlexSync
 
                     int bytes = await ns.ReadAsync(data, 0, data.Length);
 
-                    dirs = ParseServerResponse(data, bytes);
+                    directories = ParseServerResponse(data, bytes);
 
                     ns.Close();
                     client.Close();
@@ -87,19 +102,27 @@ namespace PlexSync
             }
             catch (TimeoutException ex)
             {
-                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), ex.Message, Snackbar.LengthIndefinite)
+                Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), ex.Message, Snackbar.LengthIndefinite)
                        .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
                 return;
             }
+            finally
+            {
+                RunOnUiThread(UpdateTableView);
+            }            
+        }
 
+        private void UpdateTableView()
+        {
             // add the strings into the table layout
-            TableLayout table = FindViewById<TableLayout>(Resource.Id.tablelayout);
+            TableLayout table = FindViewById<TableLayout>(Resource.Id.tableLayout);
             var layout = new TableRow.LayoutParams(
                 ViewGroup.LayoutParams.MatchParent,
                 ViewGroup.LayoutParams.MatchParent);
             table.RemoveAllViews();
 
-            foreach (string s in dirs)
+            int i = 0;
+            foreach (string s in directories)
             {
                 TableRow row = new TableRow(this);
 
@@ -108,9 +131,15 @@ namespace PlexSync
                     Text = s
                 };
 
+                text.TextSize = 15;
 
-                row.AddView(text, 0);
+
+                row.AddView(text);
+
+                if (i++ % 2 == 0)
+                    row.SetBackgroundColor(Android.Graphics.Color.LightBlue);
                 table.AddView(row);
+
             }
         }
 
