@@ -127,7 +127,7 @@ namespace PlexSync
                 {
                     client.SendTimeout = 1000;
                     client.ReceiveTimeout = 1000;
-                    client.Connect("192.168.0.2", port);
+                    client.Connect("192.168.1.11", port);
 
                     var ns = client.GetStream();
 

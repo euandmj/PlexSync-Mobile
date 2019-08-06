@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Net.Sockets;
-
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -25,7 +24,9 @@ namespace PlexSync
     {
         private const string timeString = "__gettime__";
         private const string refreshString = "__refreshplex__";
-        private TcpClient client;
+
+        private string localendpoint = "0.0.0.0";
+        private string remoteendpoint = "0.0.0.0";
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -46,26 +47,32 @@ namespace PlexSync
 
             FindViewById<Button>(Resource.Id.button_refresh).Click += this.Tools_Click;
 
+            bool did_my_client_survive = false;
             try
             {
-                client = new TcpClient();
-                client.SendTimeout = 1000;
-                client.ReceiveTimeout = 1000;
+                using (var c = new TcpClient())
+                {
+                    c.SendTimeout = 1000;
+                    c.ReceiveTimeout = 1000;
 
-                client.Connect("192.168.0.2", 54000);
+                    c.Connect("192.168.1.11", 54000);
+
+                    localendpoint = c.Client.LocalEndPoint.ToString();
+                    remoteendpoint = c.Client.RemoteEndPoint.ToString();
 
 
+                    did_my_client_survive = true;
 
-
+                }
             }
             catch (System.IO.IOException ex)
             {
                 Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), ex.Message, Snackbar.LengthIndefinite)
                        .SetAction("Action", (View.IOnClickListener)null).Show();
             }
-            catch (SocketException)
+            catch (SocketException ex)
             {
-                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), "No response from host", Snackbar.LengthIndefinite)
+                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), ex.Message, Snackbar.LengthIndefinite)
                     .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
             }
             catch (TimeoutException ex)
@@ -73,50 +80,56 @@ namespace PlexSync
                 Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), ex.Message, Snackbar.LengthIndefinite)
                        .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
             }
-            init();
+            finally
+            {
+                init(did_my_client_survive);
+            }
         }
 
         private void Tools_Click(object sender, EventArgs e)
         {
-            if (!client.Connected)
-                return;
-
             try
             {
-                var ns = client.GetStream();
-                byte[] data = Encoding.UTF8.GetBytes(refreshString);
+                using (var client = new TcpClient())
+                {
+                    client.SendTimeout = 1000;
+                    client.ReceiveTimeout = 1000;
 
-                ns.Write(data, 0, data.Length);
+                    client.Connect("192.168.1.11", 54000);
+
+
+                    var ns = client.GetStream();
+                    byte[] data = Encoding.UTF8.GetBytes(refreshString);
+
+                    ns.Write(data, 0, data.Length);
+                }                   
             }
             catch (System.IO.IOException)
             {
-                init();
+                init(false);
             }
         }
 
-        private void init()
+        private void init(bool isConnected)
         {
-            if(client.Connected)
+            Android.Graphics.Color statusColor = isConnected ? Android.Graphics.Color.Green : Android.Graphics.Color.Red;
+
+            FindViewById<TextView>(Resource.Id.text_deviceip1).Text = localendpoint;
+
+            FindViewById<TextView>(Resource.Id.text_status1).Text = isConnected.ToString();
+
+            FindViewById<TextView>(Resource.Id.text_status1).SetTextColor(statusColor);
+
+            FindViewById<TextView>(Resource.Id.text_server1).Text = remoteendpoint;
+
+            FindViewById<TextView>(Resource.Id.text_trans1).Text = "0 KB";
+
+
+            if (isConnected)
             {
-                FindViewById<TextView>(Resource.Id.text_deviceip1).Text = this.client.Client.LocalEndPoint.ToString();
-
-                FindViewById<TextView>(Resource.Id.text_status1).Text = "Connected";
-                FindViewById<TextView>(Resource.Id.text_status1).SetTextColor(Android.Graphics.Color.Green);
-
-                FindViewById<TextView>(Resource.Id.text_server1).Text = this.client.Client.RemoteEndPoint.ToString();
-
-                FindViewById<TextView>(Resource.Id.text_trans1).Text = this.client.Available.ToString() + " KB";
-
                 // for uptime- ping the server and do uptime request.
                 Thread t = new Thread(ServerTimeLoop);
                 t.Start();
-            }
-            else
-            {
-                // lets update with what we can do
-                FindViewById<TextView>(Resource.Id.text_deviceip1).Text = this.client.Client.LocalEndPoint.ToString();
-                FindViewById<TextView>(Resource.Id.text_status1).Text = "Not Connected";
-                FindViewById<TextView>(Resource.Id.text_status1).SetTextColor(Android.Graphics.Color.Red);
             }
         }
 
@@ -128,16 +141,26 @@ namespace PlexSync
 
             try
             {
-                var ns = client.GetStream();
-                byte[] data = Encoding.UTF8.GetBytes(timeString);
+                using (var client = new TcpClient())
+                {
+                    client.SendTimeout = 1000;
+                    client.ReceiveTimeout = 1000;
 
-                ns.Write(data, 0, data.Length);
+                    client.Connect("192.168.1.11", 54000);
 
-                data = new byte[1024];
 
-                int bytes = await ns.ReadAsync(data, 0, data.Length);
+                    var ns = client.GetStream();
+                    byte[] data = Encoding.UTF8.GetBytes(timeString);
 
-                response = Encoding.UTF8.GetString(data, 0, bytes);
+                    ns.Write(data, 0, data.Length);
+
+                    data = new byte[1024];
+
+                    int bytes = await ns.ReadAsync(data, 0, data.Length);
+
+                    response = Encoding.UTF8.GetString(data, 0, bytes);
+                }
+                 
 
             }
             catch (System.IO.IOException ex)
@@ -163,12 +186,9 @@ namespace PlexSync
                 start = DateTime.ParseExact(response, "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
 
 
-            }
-           
-               
-          
+            }  
 
-            while (client.Connected)
+            while (true)
             {
                 DateTime now = DateTime.Now;
                 TimeSpan delta = start - now;
@@ -195,19 +215,15 @@ namespace PlexSync
 
             if (id == Resource.Id.nav_magnet)
             {
-                client.Close();
                 StartActivity(new Intent(this, typeof(MainActivity)));
 
             }
             else if (id == Resource.Id.nav_folder)
             {
-                client.Close();
                 StartActivity(new Intent(this, typeof(ViewFolder)));
-
             }
             else if (id == Resource.Id.nav_downloads)
             {
-                client.Close();
                 StartActivity(new Intent(this, typeof(ViewDownloads)));
             }
 
@@ -219,8 +235,6 @@ namespace PlexSync
         public override void Finish()
         {
             base.Finish();
-
-            client.Close();
         }
     }
     
