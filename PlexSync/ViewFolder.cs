@@ -15,6 +15,7 @@ using Android.Support.V7.App;
 using Android.Views;
 using Android.Widget;
 using System.Threading;
+using Android.Preferences;
 
 namespace PlexSync
 {
@@ -23,6 +24,7 @@ namespace PlexSync
     {
         private List<string> directories; 
         private const string folderRequest = "__listdownloaded__";
+        private string hostname;
         private SwipeRefreshLayout swipeRefreshLayout;
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -32,6 +34,11 @@ namespace PlexSync
 
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
+
+
+            var prefs = PreferenceManager.GetDefaultSharedPreferences(this);
+            hostname = prefs.GetString(key: "hostname", defValue: GetString(Resource.String.default_hostname));
+
 
             directories = new List<string>();
 
@@ -71,7 +78,7 @@ namespace PlexSync
                 {
                     client.SendTimeout = 1000;
                     client.ReceiveTimeout = 1000;
-                    client.Connect("192.168.1.11", port);
+                    client.Connect(hostname, port);
 
                     var ns = client.GetStream();
 

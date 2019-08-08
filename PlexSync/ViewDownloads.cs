@@ -7,6 +7,7 @@ using System.Threading;
 using Android.App;
 using Android.Content;
 using Android.OS;
+using Android.Preferences;
 using Android.Runtime;
 using Android.Support.Design.Widget;
 using Android.Support.V4.View;
@@ -41,6 +42,7 @@ namespace PlexSync
         private SwipeRefreshLayout swipeRefreshLayout;
 
         private const string downloadsRequest = "__listtorrents__";
+        private string hostname;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -49,10 +51,15 @@ namespace PlexSync
 
             SetContentView(Resource.Layout.activity_downloads);
 
-            activeDownloads = new Dictionary<string, Torrent>();
 
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
+
+            activeDownloads = new Dictionary<string, Torrent>();
+
+            var prefs = PreferenceManager.GetDefaultSharedPreferences(this);
+            hostname = prefs.GetString(key: "hostname", defValue: GetString(Resource.String.default_hostname));
+
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, Resource.String.navigation_drawer_open, Resource.String.navigation_drawer_close);
@@ -92,7 +99,7 @@ namespace PlexSync
                     client.ReceiveTimeout = 1000;
 
 
-                    client.Connect("192.168.1.11", port);
+                    client.Connect(hostname, port);
 
                     var ns = client.GetStream();
 

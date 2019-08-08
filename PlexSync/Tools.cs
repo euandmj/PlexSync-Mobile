@@ -16,6 +16,7 @@ using Android.Widget;
 using System.Net;
 using System.Threading.Tasks;
 using System.Threading;
+using Android.Preferences;
 
 namespace PlexSync
 {
@@ -27,6 +28,7 @@ namespace PlexSync
 
         private string localendpoint = "0.0.0.0";
         private string remoteendpoint = "0.0.0.0";
+        private string hostname;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -37,6 +39,11 @@ namespace PlexSync
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
 
+
+            var prefs = PreferenceManager.GetDefaultSharedPreferences(this);
+            hostname = prefs.GetString(key: "hostname", defValue: GetString(Resource.String.default_hostname));
+
+
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, Resource.String.navigation_drawer_open, Resource.String.navigation_drawer_close);
             drawer.AddDrawerListener(toggle);
@@ -45,7 +52,7 @@ namespace PlexSync
             NavigationView navigationView = FindViewById<NavigationView>(Resource.Id.nav_view);
             navigationView.SetNavigationItemSelectedListener(this);
 
-            FindViewById<Button>(Resource.Id.button_refresh).Click += this.Tools_Click;
+            FindViewById<Button>(Resource.Id.button_refresh).Click += this.RefreshLibrary_Click;
 
             bool did_my_client_survive = false;
             try
@@ -55,7 +62,7 @@ namespace PlexSync
                     c.SendTimeout = 1000;
                     c.ReceiveTimeout = 1000;
 
-                    c.Connect("192.168.1.11", 54000);
+                    c.Connect(hostname, 54000);
 
                     localendpoint = c.Client.LocalEndPoint.ToString();
                     remoteendpoint = c.Client.RemoteEndPoint.ToString();
@@ -86,7 +93,7 @@ namespace PlexSync
             }
         }
 
-        private void Tools_Click(object sender, EventArgs e)
+        private void RefreshLibrary_Click(object sender, EventArgs e)
         {
             try
             {
@@ -95,7 +102,7 @@ namespace PlexSync
                     client.SendTimeout = 1000;
                     client.ReceiveTimeout = 1000;
 
-                    client.Connect("192.168.1.11", 54000);
+                    client.Connect(hostname, 54000);
 
 
                     var ns = client.GetStream();
@@ -104,9 +111,20 @@ namespace PlexSync
                     ns.Write(data, 0, data.Length);
                 }                   
             }
-            catch (System.IO.IOException)
+            catch (System.IO.IOException ex)
             {
-                init(false);
+                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), ex.Message, Snackbar.LengthIndefinite)
+                       .SetAction("Action", (View.IOnClickListener)null).Show();
+            }
+            catch (SocketException ex)
+            {
+                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), ex.Message, Snackbar.LengthIndefinite)
+                    .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
+            }
+            catch (TimeoutException ex)
+            {
+                Snackbar.Make(FindViewById<View>(Resource.Id.tablelayout), ex.Message, Snackbar.LengthIndefinite)
+                       .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
             }
         }
 
@@ -116,7 +134,7 @@ namespace PlexSync
 
             FindViewById<TextView>(Resource.Id.text_deviceip1).Text = localendpoint;
 
-            FindViewById<TextView>(Resource.Id.text_status1).Text = isConnected.ToString();
+            FindViewById<TextView>(Resource.Id.text_status1).Text = isConnected ? "Connected" : "Disconnected";
 
             FindViewById<TextView>(Resource.Id.text_status1).SetTextColor(statusColor);
 
@@ -139,6 +157,7 @@ namespace PlexSync
             var textview = FindViewById<TextView>(Resource.Id.text_uptime1);
             string response = string.Empty;
 
+
             try
             {
                 using (var client = new TcpClient())
@@ -146,7 +165,7 @@ namespace PlexSync
                     client.SendTimeout = 1000;
                     client.ReceiveTimeout = 1000;
 
-                    client.Connect("192.168.1.11", 54000);
+                    client.Connect(hostname, 54000);
 
 
                     var ns = client.GetStream();

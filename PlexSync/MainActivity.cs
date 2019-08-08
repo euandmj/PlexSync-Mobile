@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Net.Sockets;
 using Android;
+using Android.Content.Res;
 using Android.App;
 using Android.Content;
 using Android.OS;
+using Android.Preferences;
 using Android.Runtime;
 using Android.Support.Design.Widget;
 using Android.Support.V4.View;
@@ -19,14 +21,26 @@ namespace PlexSync
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
     public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
     {
+        string DEFAULT_HOSTNAME;
+        string hostname;
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
+            DEFAULT_HOSTNAME = GetString(Resource.String.default_hostname);
             SetContentView(Resource.Layout.activity_main);
 
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
 
+            // First time initialisation
+            var prefs = PreferenceManager.GetDefaultSharedPreferences(this);
+            if (prefs.GetBoolean(key: "firststart", defValue: true))
+            {
+                ShowStartDialog(prefs);
+            }
+            hostname = prefs.GetString(key: "hostname", defValue: DEFAULT_HOSTNAME);
+            
             FloatingActionButton fab = FindViewById<FloatingActionButton>(Resource.Id.fab);
             fab.Click += FabOnClick;
 
@@ -48,6 +62,35 @@ namespace PlexSync
 
             var clipbrdSender = FindViewById<EditText>(Resource.Id.magnetText);
             clipbrdSender.Click += this.DumpClipboardString;
+        }
+
+        private void ShowStartDialog(ISharedPreferences prefs)
+        {
+            LayoutInflater layoutInflater = LayoutInflater.From(this);
+            View view = layoutInflater.Inflate(Resource.Layout.hostname_input_box, null);
+            Android.Support.V7.App.AlertDialog.Builder alertBuilder = new Android.Support.V7.App.AlertDialog.Builder(this);
+            alertBuilder.SetView(view);
+
+            var input = view.FindViewById<EditText>(Resource.Id.hostnameText);
+            alertBuilder.SetCancelable(false).SetPositiveButton("Submit", delegate
+            {
+                hostname = input.Text;
+            }).SetNegativeButton("Cancel", delegate
+            {
+                hostname = DEFAULT_HOSTNAME;
+                alertBuilder.Dispose();
+            });
+
+            Android.Support.V7.App.AlertDialog dialog = alertBuilder.Create();
+            dialog.Show();
+
+
+            var editor = prefs.Edit();
+            // add the hostname into the preferences
+            editor.PutString("hostname", hostname);
+            // add a boolean tag
+            editor.PutBoolean("firststart", false);
+            editor.Apply();
         }
 
         private void spinner_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
@@ -127,7 +170,7 @@ namespace PlexSync
                 {
                     client.SendTimeout = 1000;
                     client.ReceiveTimeout = 1000;
-                    client.Connect("192.168.1.11", port);
+                    client.Connect(hostname, port);
 
                     var ns = client.GetStream();
 
