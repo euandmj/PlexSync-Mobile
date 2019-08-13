@@ -105,22 +105,6 @@ namespace PlexSync
 			}
 		}
 		
-		public partial class Array
-		{
-			
-			// aapt resource value: 0x7f0e0000
-			public const int directories = 2131623936;
-			
-			static Array()
-			{
-				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
-			}
-			
-			private Array()
-			{
-			}
-		}
-		
 		public partial class Attribute
 		{
 			
@@ -3306,11 +3290,11 @@ namespace PlexSync
 		public partial class Menu
 		{
 			
-			// aapt resource value: 0x7f0f0000
-			public const int activity_main_drawer = 2131689472;
+			// aapt resource value: 0x7f0e0000
+			public const int activity_main_drawer = 2131623936;
 			
-			// aapt resource value: 0x7f0f0001
-			public const int menu_main = 2131689473;
+			// aapt resource value: 0x7f0e0001
+			public const int menu_main = 2131623937;
 			
 			static Menu()
 			{

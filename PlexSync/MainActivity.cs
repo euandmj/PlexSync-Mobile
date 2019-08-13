@@ -14,6 +14,7 @@ using Android.Support.V7.App;
 using Android.Views;
 using Android.Widget;
 using Plugin.Clipboard;
+using System.Text;
 
 namespace PlexSync
 {
@@ -21,6 +22,7 @@ namespace PlexSync
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
     public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
     {
+        const string DIRECTORIES_REQUEST = "__getdirectories__";
         string DEFAULT_HOSTNAME;
         string hostname;
 
@@ -53,15 +55,92 @@ namespace PlexSync
             navigationView.SetNavigationItemSelectedListener(this);
 
             var spinner = FindViewById<Spinner>(Resource.Id.spinner);
-            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(spinner_ItemSelected);
-            var adapter = ArrayAdapter.CreateFromResource(
-                    this, Resource.Array.directories, Android.Resource.Layout.SimpleSpinnerItem);
-            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
-            spinner.Adapter = adapter;
 
+            initialsieSpinner();
+
+            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(spinner_ItemSelected);
+
+           
 
             var clipbrdSender = FindViewById<EditText>(Resource.Id.magnetText);
             clipbrdSender.Click += this.DumpClipboardString;
+        }
+
+        async private void initialsieSpinner()
+        {
+            var spinner = FindViewById<Spinner>(Resource.Id.spinner);
+            string[] dirs = new string[] { };
+
+            // sync to server and get the directories
+
+            try
+            {
+                using (var client = new TcpClient())
+                {
+                    client.SendTimeout = 1000;
+                    client.ReceiveTimeout = 1000;
+                    client.Connect(hostname, 54000);
+
+                    var ns = client.GetStream();
+
+                    byte[] data = Encoding.UTF8.GetBytes(DIRECTORIES_REQUEST);
+                    ns.Write(data, 0, data.Length);
+
+                    data = new byte[1024];
+
+                    int bytes = await ns.ReadAsync(data, 0, data.Length);
+
+                    string rawresp = Encoding.UTF8.GetString(data, 0, bytes);
+
+                    if (rawresp == string.Empty)
+                        throw new FormatException("null response from server when requesting plex directories");
+
+                    dirs = rawresp.Split('?');
+                }
+            }
+            catch (System.IO.IOException ex)
+            {
+                Snackbar.Make(FindViewById<View>(Resource.Id.textView1), ex.Message, Snackbar.LengthIndefinite)
+                       .SetAction("Action", (View.IOnClickListener)null).Show();
+            }
+            catch (SocketException ex)
+            {
+                Snackbar.Make(FindViewById<View>(Resource.Id.textView1), ex.Message, Snackbar.LengthIndefinite)
+                    .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
+            }
+            catch (TimeoutException ex)
+            {
+                Snackbar.Make(FindViewById<View>(Resource.Id.textView1), ex.Message, Snackbar.LengthIndefinite)
+                       .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
+            }
+            catch(FormatException ex)
+            {
+                Snackbar.Make(FindViewById<View>(Resource.Id.textView1), ex.Message, Snackbar.LengthIndefinite)
+                       .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
+            }
+            finally
+            {
+
+                var ad = new ArrayAdapter<string>(this, Android.Resource.Layout.SimpleSpinnerItem, dirs);
+
+
+                ad.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+                spinner.Adapter = ad;
+            }
+
+
+        }
+
+        private void spinner_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            // do something interesting with this function?
+            // change background or smth
+
+            //var spinner = (Spinner)sender;
+
+            //string selected = spinner.SelectedItem.ToString();
+
+            //Toast.MakeText(this, selected, ToastLength.Long).Show();
         }
 
         private void ShowStartDialog(ISharedPreferences prefs)
@@ -93,17 +172,7 @@ namespace PlexSync
             editor.Apply();
         }
 
-        private void spinner_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
-        {
-            // do something interesting with this function?
-            // change background or smth
-
-            //var spinner = (Spinner)sender;
-
-            //string selected = spinner.SelectedItem.ToString();
-
-            //Toast.MakeText(this, selected, ToastLength.Long).Show();
-        }
+       
 
         private async void DumpClipboardString(object sender, EventArgs e)
         {
