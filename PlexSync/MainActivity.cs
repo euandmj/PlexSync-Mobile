@@ -223,6 +223,7 @@ namespace PlexSync
         {
             // set up the http send and replace the string below with the response
 
+            // send through the spinner id as first byte
 
             string text = FindViewById<EditText>(Resource.Id.magnetText).Text;
 
