@@ -14,7 +14,7 @@ Mobile client for the [PlexSync Server](https://github.com/euandmj/PlexSync-Serv
 
 <h2>Setup</h2>
 
-1. Download the latest server build and extract file contents
+1. Clone the server repo available [here](https://github.com/euandmj/PlexSync-Server)
 
 2. Configure your config.ini 
 
