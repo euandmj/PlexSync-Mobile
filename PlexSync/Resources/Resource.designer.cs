@@ -2405,6 +2405,9 @@ namespace PlexSync
 			// aapt resource value: 0x7f08005a
 			public const int action_bar_title = 2131230810;
 			
+			// aapt resource value: 0x7f0800d3
+			public const int action_configure = 2131230931;
+			
 			// aapt resource value: 0x7f0800b8
 			public const int action_container = 2131230904;
 			
@@ -2431,9 +2434,6 @@ namespace PlexSync
 			
 			// aapt resource value: 0x7f08005c
 			public const int action_mode_close_button = 2131230812;
-			
-			// aapt resource value: 0x7f0800d3
-			public const int action_settings = 2131230931;
 			
 			// aapt resource value: 0x7f0800ba
 			public const int action_text = 2131230906;

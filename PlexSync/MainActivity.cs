@@ -211,9 +211,9 @@ namespace PlexSync
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
             int id = item.ItemId;
-            if (id == Resource.Id.action_settings)
+            if (id == Resource.Id.action_configure)
             {
-                return true;
+                ShowStartDialog(PreferenceManager.GetDefaultSharedPreferences(this));
             }
 
             return base.OnOptionsItemSelected(item);
@@ -225,12 +225,12 @@ namespace PlexSync
 
             // send through the spinner id as first byte
 
+            int spinId = FindViewById<Spinner>(Resource.Id.spinner).SelectedItemPosition;
             string text = FindViewById<EditText>(Resource.Id.magnetText).Text;
 
             if (text == "") return;
 
-            //string uri = AppendDir(text);
-            string uri = text;
+            string uri = spinId.ToString() + text;
             string response = string.Empty;
             const int port = 54000;
 
@@ -244,7 +244,7 @@ namespace PlexSync
 
                     var ns = client.GetStream();
 
-                    byte[] data = System.Text.Encoding.UTF8.GetBytes(uri);
+                    byte[] data = Encoding.UTF8.GetBytes(uri);
 
                     ns.Write(data, 0, data.Length);
 
@@ -252,7 +252,7 @@ namespace PlexSync
 
                     // Read the first batch of the TcpServer response bytes.
                     Int32 bytes = ns.Read(data, 0, data.Length);
-                    response = System.Text.Encoding.UTF8.GetString(data, 0, bytes);
+                    response = Encoding.UTF8.GetString(data, 0, bytes);
 
                     ns.Close();
                     client.Close();
