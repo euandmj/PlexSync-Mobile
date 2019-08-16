@@ -1,5 +1,7 @@
 Mobile client for the [PlexSync Server](https://github.com/euandmj/PlexSync-Server). Remotely add torrents, view downloads or files on the server.
 
+### Check the [google drive](https://drive.google.com/open?id=1einZzj-qU4NlYMcgrXWWuSjrAltXhYRW) for the latest build
+
 <h2>Requirements:</h2>
 
 * Plex Server: [here](https://www.plex.tv/)
