@@ -32,19 +32,19 @@ Mobile client for the [PlexSync Server](https://github.com/euandmj/PlexSync-Serv
 
 The server can be configured via the config.ini file.
 
-| Section     	| Config      	| Description                                            	|
-|-------------	|-------------	|--------------------------------------------------------	|
-| General     	| savepath    	| the default directory for torrents to be downloaded to 	|
-| Server      	| name        	| name of the machine for logging purposes               	|
-|             	| host        	| ipv4 of the server                                     	|
-|             	| port        	| port for the server to listen to                       	|
-| Plex        	| server      	| plex media server name                                 	|
-|             	| username    	| your plex account username                             	|
-|             	| password    	| your plex account password                             	|
-|             	| directories 	| the various libararies for the plex media i.e. movies  	|
-| qBittorrent 	| host        	| the hostname of the server running qBitTorrent WebUI   	|
-|             	| username    	| the username for the qBitTorrent WebUI client          	|
-|             	| password    	| the password the for the qBitTorrent WebUI client      	|
+| Section     	| Config      	| Description                                            	   |
+|-------------	|-------------	|------------------------------------------------------------|
+| General     	| savepath    	| the default directory for torrents to be downloaded to 	   |
+| Server      	| name        	| name of the machine for logging purposes               	   |
+|             	| host        	| ipv4 of the server                                     	   |
+|             	| port        	| port for the server to listen to                       	   |
+| Plex        	| server      	| plex media server name                                 	   |
+|             	| username    	| your plex account username                             	   |
+|             	| password    	| your plex account password                             	   |
+|             	| directories 	| the various libararies for the plex media i.e. c:\movies  	|
+| qBittorrent 	| host        	| the hostname of the server running qBitTorrent WebUI   	   |
+|             	| username    	| the username for the qBitTorrent WebUI client          	   |
+|             	| password    	| the password the for the qBitTorrent WebUI client      	   |
 
 
 
