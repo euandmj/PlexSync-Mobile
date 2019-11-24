@@ -2405,8 +2405,8 @@ namespace PlexSync
 			// aapt resource value: 0x7f08005a
 			public const int action_bar_title = 2131230810;
 			
-			// aapt resource value: 0x7f0800d3
-			public const int action_configure = 2131230931;
+			// aapt resource value: 0x7f0800d2
+			public const int action_configure = 2131230930;
 			
 			// aapt resource value: 0x7f0800b8
 			public const int action_container = 2131230904;
@@ -2677,9 +2677,6 @@ namespace PlexSync
 			
 			// aapt resource value: 0x7f0800d1
 			public const int nav_manage = 2131230929;
-			
-			// aapt resource value: 0x7f0800d2
-			public const int nav_share = 2131230930;
 			
 			// aapt resource value: 0x7f08008c
 			public const int nav_view = 2131230860;
@@ -3317,6 +3314,12 @@ namespace PlexSync
 			
 			// aapt resource value: 0x7f030002
 			public const int ic_launcher_round = 2130903042;
+			
+			// aapt resource value: 0x7f030003
+			public const int orangerefresh = 2130903043;
+			
+			// aapt resource value: 0x7f030004
+			public const int orangerefreshtransparent = 2130903044;
 			
 			static Mipmap()
 			{

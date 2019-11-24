@@ -32,6 +32,7 @@ namespace PlexSync
             }
             else
                 Progress = val;
+
         }
     }
 
@@ -79,12 +80,14 @@ namespace PlexSync
 
         private void SwipeRefreshLayout_Refresh(object sender, EventArgs e)
         {
-            
-            Thread t = new Thread(RequestTorrents);
-            t.Start();
-
+            Refresh();
 
             swipeRefreshLayout.Refreshing = false;
+        }
+
+        private void Refresh()
+        {
+            new Thread(() => RequestTorrents()).Start();
         }
 
         async private void RequestTorrents()
@@ -157,13 +160,17 @@ namespace PlexSync
                         t.SetProgress(split[2]);
 
                         activeDownloads[split[0]] = t;
-                        
-                        RunOnUiThread(UpdateListView);
+
                     }
+                    RunOnUiThread(UpdateListView);
                 }
                 catch (IndexOutOfRangeException)
                 {
-                    throw;
+                    Snackbar.Make(FindViewById<View>(Resource.Id.rootLayout), $"Error parsing torrents.", Snackbar.LengthLong)
+                       .SetAction("Retry", delegate
+                       {
+                           Refresh();
+                       }).Show();
                 }
             }
         }
@@ -176,12 +183,9 @@ namespace PlexSync
                    ViewGroup.LayoutParams.WrapContent);
 
             // clear the table apart from header
-            for(int i = 1; i < table.ChildCount; i++)
-            {
-                table.RemoveViewAt(i);
-            }
+            if(table.ChildCount > 1)
+                table.RemoveViews(1, table.ChildCount-1);
 
-            int rowcolorcount = 0;
             foreach(var pair in activeDownloads)
             {
                 TableRow row = new TableRow(this);
@@ -212,7 +216,7 @@ namespace PlexSync
                 row.AddView(text, 2);
 
                 // change colour 
-                if (rowcolorcount++ % 2 == 0)
+                if (table.ChildCount % 2 == 0)
                     row.SetBackgroundColor(Android.Graphics.Color.LightBlue);
                 table.AddView(row, layout);
             }
