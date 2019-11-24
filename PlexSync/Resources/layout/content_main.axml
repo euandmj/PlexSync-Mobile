@@ -8,6 +8,7 @@
 	app:layout_behavior="@string/appbar_scrolling_view_behavior"
 	tools:showIn="@layout/app_bar_main"
 	android:minWidth="25px"
+	android:fitsSystemWindows="true"
 	android:minHeight="25px">
 	<TextView
 		android:text="paste a magnet uri below"
@@ -24,6 +25,8 @@
 		android:layout_width="match_parent"
 		android:layout_height="63.0dp"
 		android:id="@+id/magnetText" />
+
+
 	<Spinner		
 		android:layout_marginTop="25dp"
 		android:textAlignment="center"

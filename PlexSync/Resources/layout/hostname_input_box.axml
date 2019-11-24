@@ -5,16 +5,28 @@
     android:layout_height="match_parent">
 
 	<TextView  
-        android:id="@+id/dialogTitle"  
+        android:id="@+id/title"  
         android:layout_width="wrap_content"  
         android:layout_height="wrap_content"  
-        android:text="Enter Hostname"  
+        android:text="Enter server ip and port"  
+		android:textSize="26dp"
+		android:gravity="center_horizontal"
+		android:layout_marginBottom="16dp"
         android:textAppearance="?android:attr/textAppearanceLarge" />  
-    <EditText  
+    
+	<TextView  
+        android:id="@+id/hostnameTitle"  
+        android:layout_width="wrap_content"  
+        android:layout_height="wrap_content"  
+        android:text="Hostname"
+		android:textSize="18dp"
+        android:textAppearance="?android:attr/textAppearanceLarge" />  
+   
+	<EditText  
         android:id="@+id/hostnameText"  
         android:layout_width="match_parent"  
         android:layout_height="wrap_content"  
-        android:hint="i.e. 192.168.1.2" />  
+        android:hint="i.e. 192.168.1.1" />  
 	<TextView  
         android:id="@+id/tip"  
         android:layout_width="wrap_content"  
@@ -22,4 +34,18 @@
         android:text="Tip: IPv4 Address from the server's ipconfig"
         android:textAppearance="?android:attr/textAppearanceSmall" />  
 
+	<TextView  
+        android:id="@+id/portTitle"  
+        android:layout_width="wrap_content"  
+        android:layout_height="wrap_content"  
+        android:text="Port"  
+		android:textSize="18dp"
+        android:textAppearance="?android:attr/textAppearanceLarge" />  
+    <EditText  
+        android:id="@+id/portText"  
+        android:layout_width="match_parent"  
+        android:layout_height="wrap_content"  
+        android:hint="i.e. 54000" /> 
+	
+	
 </LinearLayout>

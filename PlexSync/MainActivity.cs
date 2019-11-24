@@ -23,17 +23,19 @@ namespace PlexSync
     public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
     {
         const string DIRECTORIES_REQUEST = "__getdirectories__";
-        string DEFAULT_HOSTNAME;
-        string hostname;
+        string defaultHostname, defaultPort, hostname, port;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-            DEFAULT_HOSTNAME = GetString(Resource.String.default_hostname);
+            defaultHostname = GetString(Resource.String.default_hostname);
+            defaultPort = GetString(Resource.String.default_port);
+
             SetContentView(Resource.Layout.activity_main);
 
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
+
 
             // First time initialisation
             var prefs = PreferenceManager.GetDefaultSharedPreferences(this);
@@ -41,7 +43,7 @@ namespace PlexSync
             {
                 ShowStartDialog(prefs);
             }
-            hostname = prefs.GetString(key: "hostname", defValue: DEFAULT_HOSTNAME);
+            hostname = prefs.GetString(key: "hostname", defValue: defaultHostname);
             
             FloatingActionButton fab = FindViewById<FloatingActionButton>(Resource.Id.fab);
             fab.Click += FabOnClick;
@@ -150,16 +152,21 @@ namespace PlexSync
             Android.Support.V7.App.AlertDialog.Builder alertBuilder = new Android.Support.V7.App.AlertDialog.Builder(this);
             alertBuilder.SetView(view);
 
-            var input = view.FindViewById<EditText>(Resource.Id.hostnameText);
-            alertBuilder.SetCancelable(false).SetPositiveButton("Submit", delegate
+            var hostTextbox = view.FindViewById<EditText>(Resource.Id.hostnameText);
+            var portTextbox = view.FindViewById<EditText>(Resource.Id.portText);
+
+            alertBuilder.SetCancelable(true)
+                .SetPositiveButton("Submit", delegate
             {
-                hostname = input.Text;
+                hostname = hostTextbox.Text;
+                port = portTextbox.Text;
             }).SetNegativeButton("Cancel", delegate
             {
-                hostname = DEFAULT_HOSTNAME;
-                alertBuilder.Dispose();
+                hostname = defaultHostname;
+                port = defaultPort;
             });
 
+            alertBuilder.Dispose();
             Android.Support.V7.App.AlertDialog dialog = alertBuilder.Create();
             dialog.Show();
 
@@ -167,6 +174,7 @@ namespace PlexSync
             var editor = prefs.Edit();
             // add the hostname into the preferences
             editor.PutString("hostname", hostname);
+            editor.PutString("port", port);
             // add a boolean tag
             editor.PutBoolean("firststart", false);
             editor.Apply();
@@ -232,7 +240,6 @@ namespace PlexSync
 
             string uri = spinId.ToString() + text;
             string response = string.Empty;
-            const int port = 54000;
 
             try
             {
@@ -240,7 +247,7 @@ namespace PlexSync
                 {
                     client.SendTimeout = 1000;
                     client.ReceiveTimeout = 1000;
-                    client.Connect(hostname, port);
+                    client.Connect(hostname, int.Parse(port));
 
                     var ns = client.GetStream();
 
@@ -258,22 +265,6 @@ namespace PlexSync
                     client.Close();
                 }
             }
-            catch (System.IO.IOException ex)
-            {
-                response = ex.Message;
-            }
-            catch (TimeoutException ex)
-            {
-                response = ex.Message;
-            }
-            catch (ArgumentNullException ex)
-            {
-                response = ex.Message;
-            }
-            catch (SocketException ex)
-            {
-                response = ex.Message;
-            }
             catch (Exception ex)
             {
                 response = ex.Message;
@@ -284,25 +275,6 @@ namespace PlexSync
             View view = (View) sender;
             Snackbar.Make(view, response, Snackbar.LengthLong)
                 .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
-        }
-
-        private string AppendDir(string uri)
-        {
-            string selected = ((Spinner)FindViewById(Resource.Id.spinner)).SelectedItem.ToString();
-
-            switch (selected)
-            {
-                case "Movies":
-                    return "MV" + uri;
-                case "TV":
-                    return "TV" + uri;
-                case "Documentaries":
-                    return "DM" + uri;
-                case "Anime":
-                    return "AN" + uri;
-                default:
-                    return "AT" + uri;
-            }
         }
 
         public bool OnNavigationItemSelected(IMenuItem item)
