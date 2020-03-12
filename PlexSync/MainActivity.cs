@@ -44,6 +44,7 @@ namespace PlexSync
                 ShowStartDialog(prefs);
             }
             hostname = prefs.GetString(key: "hostname", defValue: defaultHostname);
+            port = prefs.GetString(key: "port", defValue: defaultPort);
             
             FloatingActionButton fab = FindViewById<FloatingActionButton>(Resource.Id.fab);
             fab.Click += FabOnClick;
@@ -77,48 +78,33 @@ namespace PlexSync
 
             try
             {
-                using (var client = new TcpClient())
+                using var client = new TcpClient
                 {
-                    client.SendTimeout = 1000;
-                    client.ReceiveTimeout = 1000;
-                    client.Connect(hostname, 54000);
+                    SendTimeout = 1000,
+                    ReceiveTimeout = 1000
+                };
+                client.Connect(hostname, 54000);
 
-                    var ns = client.GetStream();
+                var ns = client.GetStream();
 
-                    byte[] data = Encoding.UTF8.GetBytes(DIRECTORIES_REQUEST);
-                    ns.Write(data, 0, data.Length);
+                byte[] data = Encoding.UTF8.GetBytes(DIRECTORIES_REQUEST);
+                ns.Write(data, 0, data.Length);
 
-                    data = new byte[1024];
+                data = new byte[1024];
 
-                    int bytes = await ns.ReadAsync(data, 0, data.Length);
+                int bytes = await ns.ReadAsync(data, 0, data.Length);
 
-                    string rawresp = Encoding.UTF8.GetString(data, 0, bytes);
+                string rawresp = Encoding.UTF8.GetString(data, 0, bytes);
 
-                    if (rawresp == string.Empty)
-                        throw new FormatException("null response from server when requesting plex directories");
+                if (rawresp == string.Empty)
+                    throw new FormatException("null response from server when requesting plex directories");
 
-                    dirs = rawresp.Split('?');
-                }
+                dirs = rawresp.Split('?');
             }
-            catch (System.IO.IOException ex)
+            catch (Exception ex)
             {
                 Snackbar.Make(FindViewById<View>(Resource.Id.textView1), ex.Message, Snackbar.LengthIndefinite)
                        .SetAction("Action", (View.IOnClickListener)null).Show();
-            }
-            catch (SocketException ex)
-            {
-                Snackbar.Make(FindViewById<View>(Resource.Id.textView1), ex.Message, Snackbar.LengthIndefinite)
-                    .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
-            }
-            catch (TimeoutException ex)
-            {
-                Snackbar.Make(FindViewById<View>(Resource.Id.textView1), ex.Message, Snackbar.LengthIndefinite)
-                       .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
-            }
-            catch(FormatException ex)
-            {
-                Snackbar.Make(FindViewById<View>(Resource.Id.textView1), ex.Message, Snackbar.LengthIndefinite)
-                       .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
             }
             finally
             {
@@ -166,7 +152,7 @@ namespace PlexSync
                 port = defaultPort;
             });
 
-            alertBuilder.Dispose();
+
             Android.Support.V7.App.AlertDialog dialog = alertBuilder.Create();
             dialog.Show();
 
